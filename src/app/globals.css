@@ -2,15 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .flex-center {
+    @apply flex justify-center items-center gap-4;
+  };
+.container{
+  @apply w-28 h-5 text-white text-xs font-mono flex-center;
+}
+.currency{
+  @apply h-14 mt-5 p-2 flex gap-2 items-center
+}
+}
+body * {
+  @apply transition-colors duration-100;
+ 
+
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+
+}
+@custom-variant dark (&:where(.dark, .dark *));
+
+.slick-prev,
+.slick-next {
+  background: transparent; /* no background */
+  border-radius: 0;        /* remove circle shape */
+  width: auto;             /* let arrow size control width */
+  height: auto;
+}
+
+/* Make the arrow visible */
+.slick-prev:before,
+.slick-next:before {
+  color: #6161D6; /* light mode color */
+  font-size: 24px; /* adjust size */
+  opacity: 1;      /* fully visible */
+}
+
+/* Dark mode */
+.dark .slick-prev:before,
+.dark .slick-next:before {
+  color: white;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+/* .slick-side > div{
+margin: 0 10px;
+} */
+
+/* .light {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .dark {
+    --foreground-rgb: 255, 255, 255;
+    --background-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
@@ -18,4 +79,4 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
-}
+} */
