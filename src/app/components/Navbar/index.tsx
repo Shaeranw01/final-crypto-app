@@ -7,7 +7,7 @@ import SearchBar from "../SearchBar";
 import Dropdown from "../DropDown";
 import ThemeSwitch from "../ThemeSwitcher";
 
-import Coinbar from "@/app/components/Coinbar/index";
+import Coinbar from "../Coinbar";
 import Link from "next/link";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
 import { useState } from "react";
