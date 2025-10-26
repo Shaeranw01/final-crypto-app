@@ -4,10 +4,10 @@
 
 @layer components {
   .flex-center {
-    @apply flex justify-center items-center gap-8;
+    @apply flex justify-center items-center gap-4;
   };
 .container{
-  @apply w-28 h-5 text-white text-xs font-mono gap-2 flex-center;
+  @apply w-28 h-5 text-white text-xs font-mono flex-center;
 }
 .currency{
   @apply h-14 mt-5 p-2 flex gap-2 items-center
@@ -27,9 +27,39 @@ body * {
 }
 @custom-variant dark (&:where(.dark, .dark *));
 
-.slick-side > div{
-margin: 0 10px;
+.slick-prev,
+.slick-next {
+  background: transparent; /* no background */
+  border-radius: 0;        /* remove circle shape */
+  width: auto;             /* let arrow size control width */
+  height: auto;
 }
+
+/* Make the arrow visible */
+.slick-prev:before,
+.slick-next:before {
+  color: #6161D6; /* light mode color */
+  font-size: 24px; /* adjust size */
+  opacity: 1;      /* fully visible */
+}
+
+/* Dark mode */
+.dark .slick-prev:before,
+.dark .slick-next:before {
+  color: white;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+/* .slick-side > div{
+margin: 0 10px;
+} */
 
 /* .light {
   --foreground-rgb: 0, 0, 0;

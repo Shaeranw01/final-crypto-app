@@ -1,3 +1,5 @@
+"use client";
+
 import { Coin } from "@/interfaces/Coininterface";
 import PriceChange from "../PriceChange";
 import TableBar from "../TableBar";
@@ -6,27 +8,25 @@ import Chart from "../TableChart";
 import Image from "next/image";
 import formatCompactNumber from "@/utlis/getFormattedPrice";
 import Link from "next/link";
+import { trimName } from "@/utlis/trimName";
+import { useState } from "react";
 
-export default function CoinRowItem({
-  coin,
-  index,
-}: {
-  coin: Coin;
-  index: number;
-}) {
+const CoinRowItem = ({ coin, index }: { coin: Coin; index: number }) => {
   const priceChange1h: number = coin.price_change_percentage_1h_in_currency;
 
   const priceChange24h: number = coin.price_change_percentage_24h_in_currency;
 
   const priceChange7d: number = coin.price_change_percentage_7d_in_currency;
 
-  const priceArray: number[] = coin.sparkline_in_7d.price;
+  const priceArray: number[] = coin.sparkline_in_7d?.price;
 
   return (
-    <div className="flex justify-between p-[20px] mb-2 items-center gap-[20px] dark:bg-[#191925] bg-white  rounded-lg">
-      <div className="w-4 dark:text-white text-[#232336]">{index + 1}</div>
-      <div className="w-56 dark:text-white  text-[#232336] flex gap-3 items-center">
-        <div>
+    <div className="flex justify-between p-[20px] mb-2 items-center gap-[20px] dark:bg-[#191925] bg-white hover:bg-[#CCCCFA66] transition-colors duration-200 rounded-lg cursor-pointer">
+      <div className="hidden sm:inline w-4 dark:text-white text-[#232336]">
+        {index + 1}
+      </div>
+      <div className="w-24 sm:w-40 h-16 dark:text-white  text-[#232336] flex gap-3 items-center overflow-hiddens ">
+        <div className="flex-shrink-0">
           <Image
             src={coin.image}
             width={30}
@@ -34,18 +34,23 @@ export default function CoinRowItem({
             alt="Picture of the coin"
           />
         </div>
-        <div>
-          <Link href={`/coin/${coin.id}`}>{coin.name}</Link>
+        <div className="flex flex-col justify-center">
+          <div className="text-lg font-bold sm:hidden">
+            {trimName(coin.symbol.toUpperCase(), 7)}
+          </div>
+          <Link href={`/coin/${coin.id}`} className="text-xs sm:text-base">
+            {trimName(coin.name, 10)}
+          </Link>
         </div>
       </div>
       <div className="w-20 dark:text-white  text-[#232336]">
-        {coin.current_price.toFixed(2)}
+        {coin.current_price?.toFixed(2)}
       </div>
       <PriceChange value={priceChange1h} />
       <PriceChange value={priceChange24h} />
       <PriceChange value={priceChange7d} />
-      <div className="w-48">
-        <div className="flex-col w-[180px]">
+      <div className="hidden sm:flex sm:w-48">
+        <div className="flex flex-col w-full">
           <div className="flex justify-between">
             <div className="flex gap-2 items-center">
               <GoDotFill
@@ -81,16 +86,16 @@ export default function CoinRowItem({
               </div>
             </div>
           </div>
+          <TableBar
+            dividend={coin.total_volume}
+            divisor={coin.market_cap}
+            fillColor={priceChange24h > 0 ? "bg-[#03FDFC]" : "bg-[#fc8181]"}
+          ></TableBar>
         </div>
-        <TableBar
-          dividend={coin.total_volume}
-          divisor={coin.market_cap}
-          fillColor={priceChange24h > 0 ? "bg-[#03FDFC]" : "bg-[#fc8181]"}
-        ></TableBar>
       </div>
 
-      <div className="w-48">
-        <div className="flex-col w-[180px]">
+      <div className="hidden sm:flex sm:w-48">
+        <div className="flex-col w-full">
           <div className="flex justify-between">
             <div className="flex gap-2 items-center">
               <GoDotFill
@@ -126,16 +131,17 @@ export default function CoinRowItem({
               </div>
             </div>
           </div>
+          <TableBar
+            dividend={coin.circulating_supply}
+            divisor={coin.total_supply}
+            fillColor={priceChange24h > 0 ? "bg-[#03FDFC]" : "bg-[#fc8181]"}
+          ></TableBar>
         </div>
-        <TableBar
-          dividend={coin.circulating_supply}
-          divisor={coin.total_supply}
-          fillColor={priceChange24h > 0 ? "bg-[#03FDFC]" : "bg-[#fc8181]"}
-        ></TableBar>
       </div>
       <div className="w-20">
         <Chart priceArray={priceArray} />
       </div>
     </div>
   );
-}
+};
+export default CoinRowItem;

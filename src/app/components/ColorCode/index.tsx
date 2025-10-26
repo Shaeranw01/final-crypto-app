@@ -1,15 +1,16 @@
 import formatCompactNumber from "@/utlis/getFormattedPrice";
 
-export default function ColorCode({
+const ColorCode = ({
   dividend,
   divisor,
 }: {
   dividend: number;
   divisor: number;
-}) {
-  const value = dividend - divisor / divisor;
-  const valueType: boolean = value >= 0;
-  const formattedNumber = value.toLocaleString(undefined, {
+}) => {
+  const value = divisor ? (dividend - divisor) / divisor : 0;
+  const safeValue = Number.isFinite(value) ? value : 0;
+  const valueType: boolean = safeValue >= 0;
+  const formattedNumber = safeValue.toLocaleString(undefined, {
     maximumFractionDigits: 2,
   });
   return (
@@ -23,4 +24,5 @@ export default function ColorCode({
       {formattedNumber}
     </div>
   );
-}
+};
+export default ColorCode;

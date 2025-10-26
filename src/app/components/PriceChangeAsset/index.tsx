@@ -2,11 +2,11 @@ import React from "react";
 import { MdArrowDropUp } from "react-icons/md";
 import { MdArrowDropDown } from "react-icons/md";
 
-const PriceChange = ({ value }: { value: number }) => {
+const PriceChangeAsset = ({ value }: { value: number }) => {
   const valueType: boolean = value >= 0;
   return (
     <div
-      className={`hidden sm:flex items-center  ${
+      className={`flex flex-row items-center ${
         valueType ? "text-teal-400" : "text-red-500"
       }`}
     >
@@ -20,4 +20,4 @@ const PriceChange = ({ value }: { value: number }) => {
   );
 };
 
-export default PriceChange;
+export default PriceChangeAsset;

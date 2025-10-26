@@ -1,10 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import HomeChart from "../HomeChart";
+import { useCoinContext } from "@/app/hooks/useCoinContext";
+const ChartContainer = () => {
+  const { showComparison } = useCoinContext();
 
-import { CoinDataContext } from "@/app/context/coinDataContext";
-
-import HomeCharts from "../HomeChart";
-export default function ChartContainer() {
-  const { showComparison } = useContext(CoinDataContext);
-
-  return <div>{!showComparison && <HomeCharts />}</div>;
-}
+  return <div>{!showComparison && <HomeChart />}</div>;
+};
+export default ChartContainer;

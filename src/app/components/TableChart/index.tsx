@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import "chart.js/auto";
 import getLabelArray from "@/utlis/getLabelArray";
+import { ChartArea } from "chart.js/auto";
+import { ScriptableContext } from "chart.js/auto";
+import { ChartOptions } from "chart.js/auto";
 
 const Chart = ({ priceArray }: { priceArray: number[] }) => {
   const [priceData, setData] = useState(priceArray);
@@ -17,21 +20,32 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
   const labelArray = getLabelArray(priceArray.length);
 
   const bgColor = [
-    "rgba(3,253,252, 0.6)",
+    "rgba(3,253,252, 0.8)",
+    "rgba(252,129,129, 0.8)",
+    "rgba(33,253,252, 0.6)",
     "rgba(252,129,129, 0.6)",
-    "rgba(33,253,252, 0.3)",
-    "rgba(252,129,129, 0.3)",
+    "rgba(3,253,252, 0.1)",
+    "rgba(252,129,129, 0.1)",
   ];
 
-  function getGradient(ctx, chartArea, color1, color2) {
+  function getGradient(
+    ctx: CanvasRenderingContext2D,
+    chartArea: ChartArea,
+    color1: string,
+    color2: string,
+    color3: string
+  ) {
     let gradient = ctx.createLinearGradient(
       0,
       chartArea.top,
       0,
       chartArea.bottom
     );
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
+    gradient.addColorStop(0, color1); // bright
+    // Middle (medium)
+    gradient.addColorStop(0.5, color2); // mid tone
+    // Bottom (darkest)
+    gradient.addColorStop(1, color3); // darker
     return gradient;
   }
 
@@ -41,7 +55,7 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
       {
         data: priceData,
 
-        backgroundColor: function (context) {
+        backgroundColor: function (context: ScriptableContext<"line">) {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
 
@@ -55,13 +69,16 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
               : bgColor[1],
             priceData[0] < priceData[priceData.length - 1]
               ? bgColor[2]
-              : bgColor[3]
+              : bgColor[3],
+            priceData[0] < priceData[priceData.length - 1]
+              ? bgColor[4]
+              : bgColor[5]
           );
         },
         borderColor:
           priceData[0] < priceData[priceData.length - 1]
-            ? bgColor[0]
-            : bgColor[1],
+            ? "rgba(3,253,252, 1)"
+            : "rgba(252,129,129, 1)",
 
         borderWidth: 1,
 
@@ -72,9 +89,11 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
       },
     ],
   };
-  const options = {
+  const options: ChartOptions<"line"> = {
     plugins: {
-      legend: false, // Hide legend
+      legend: {
+        display: false,
+      }, // Hide legend
     },
     scales: {
       y: {
@@ -98,7 +117,7 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
 
   return (
     <div>
-      <div className="w-[150px] h-[40px] dark:bg-[#191932] bg-white">
+      <div className="w-36 h-10">
         <Line data={data} options={options} />
       </div>
     </div>

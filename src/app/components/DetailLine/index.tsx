@@ -1,17 +1,32 @@
 import formatCompactNumber from "@/utlis/getFormattedPrice";
 import { IoAddCircleSharp } from "react-icons/io5";
+import { ReactElement } from "react";
 
-const DetailLine = ({ text, value }: { text: string; value: number }) => {
+const DetailLine = ({
+  text,
+  value,
+  symbol,
+}: {
+  text: string;
+  value: number;
+  symbol: ReactElement;
+}) => {
+  const safeValue =
+    typeof value === "number" && !isNaN(value) ? value : undefined;
   return (
-    <div className="w-[407px] h-[24px] flex gap-[12px]">
-      <div className="w-[24px] h-[24px]">
-        <IoAddCircleSharp className="fill-[#7878FA]" />
-      </div>
-      <div className="w-[180px] h-[11px] font-[400] text-[16px]  leading-[20.42px]">
-        {text}
-      </div>
-      <div className="w-[175px] h-[14px] font-[500] text-[20px] leading-[25.52px]">
-        ${formatCompactNumber(value)}
+    <div className="w-96 h-6 flex gap-3">
+      <IoAddCircleSharp className="w-6 h-6 fill-[#7878FA] " />
+
+      <div className="w-44  font-normal text-base">{text}</div>
+      <div className="w-44 font-medium text-lg flex items-center gap-1">
+        <span>{symbol}</span>
+        <span className="inline sm:hidden">
+          {safeValue !== undefined ? formatCompactNumber(safeValue) : "—"}
+        </span>
+        <span className="hidden sm:inline">
+          {" "}
+          {safeValue !== undefined ? safeValue.toLocaleString() : "—"}
+        </span>
       </div>
     </div>
   );

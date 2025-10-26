@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import AddAsset from "../AddAsset";
 
-export default function PortfolioComponent() {
+const PortfolioComponent = () => {
   const [showAddPopUp, setPopUp] = useState(false);
 
   const handlePopUp = () => {
@@ -26,25 +26,17 @@ export default function PortfolioComponent() {
 
       {showAddPopUp && (
         <div className="w-full h-20 flex gap-4 justify-between relative top-40">
-          <button className="w-1/2" onClick={handleSave}>
+          <button className="w-1/2" onClick={() => handleSave()}>
             {" "}
-            Sharan
+            Save
           </button>
           <button className="w-1/2" onClick={() => handlePopUp()}>
             Cancel
           </button>
         </div>
       )}
-
-      {/* <div className="w-full h-20 flex gap-4 justify-between absolute bottom-0 left-0">
-        <button className="w-1/2" onClick={handleSave}>
-          {" "}
-          Sharan
-        </button>
-        <button className="w-1/2" onClick={() => handlePopUp()}>
-          Cancel
-        </button>
-      </div> */}
     </div>
   );
-}
+};
+
+export default PortfolioComponent;

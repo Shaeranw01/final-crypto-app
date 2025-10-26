@@ -8,7 +8,7 @@ import { AiOutlinePoundCircle } from "react-icons/ai";
 import { FaEthereum } from "react-icons/fa6";
 import { FaBitcoin } from "react-icons/fa";
 
-export default function CurrencySelector() {
+const CurrencySelector = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropDown = () => {
@@ -17,9 +17,7 @@ export default function CurrencySelector() {
   return (
     <div className="w-24 bg-[#191925] flex justify-start items-center p-7  relative">
       <button onClick={toggleDropDown}>Search...</button>
-      {isOpen && (
-        <div className="absolute  w-32 top-20 right-0 "></div>
-      )}
+      {isOpen && <div className="absolute  w-32 top-20 right-0 "></div>}
 
       {isOpen && (
         <div className="absolute w-32 top-20 right-0 ">
@@ -49,4 +47,5 @@ export default function CurrencySelector() {
       )}
     </div>
   );
-}
+};
+export default CurrencySelector;

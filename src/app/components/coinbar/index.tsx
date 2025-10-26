@@ -8,8 +8,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 
 import { GoDotFill } from "react-icons/go";
+import formatCompactNumber from "@/utlis/getFormattedPrice";
 
-export default function Coinbar() {
+const Coinbar = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [marketData, setMarketData] = useState({
     activeCurrencies: 0,
     btcCap: 0,
@@ -17,43 +20,56 @@ export default function Coinbar() {
     volume: 0,
     marketCap: 0,
   });
+  console.log("coin bar rendered");
   const fetchData = async () => {
-    const data = await fetch("https://api.coingecko.com/api/v3/global");
-    let jsonData = await data.json();
-    jsonData = jsonData.data;
+    setLoading(true);
+    setError(null);
 
-    setMarketData({
-      activeCurrencies: jsonData.active_cryptocurrencies,
-      btcCap: jsonData.market_cap_percentage.btc,
-      ethCap: jsonData.market_cap_percentage.eth,
-      volume: jsonData.total_volume.btc,
-      marketCap: jsonData.total_market_cap.btc,
-    });
+    try {
+      const response = await fetch(
+        "https://corsproxy.io/?url=https://api.coingecko.com/api/v3/global"
+      );
+      if (!response.ok) {
+        throw new Error(`Network Error`);
+      }
+      const { data } = await response.json();
+      if (!data) throw new Error("No data received from API");
 
-    return jsonData;
-  };
-
-  function formatCompactNumber(number: number) {
-    if (number < 1000) {
-      return number;
-    } else if (number >= 1000 && number < 1_000_000) {
-      return (number / 1000).toFixed(1).replace(/\.0$/, "") + "K";
-    } else if (number >= 1_000_000 && number < 1_000_000_000) {
-      return (number / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-    } else if (number >= 1_000_000_000 && number < 1_000_000_000_000) {
-      return (number / 1_000_000_000).toFixed(1).replace(/\.0$/, "") + "B";
-    } else if (number >= 1_000_000_000_000 && number < 1_000_000_000_000_000) {
-      return (number / 1_000_000_000_000).toFixed(1).replace(/\.0$/, "") + "T";
+      setMarketData({
+        activeCurrencies: data.active_cryptocurrencies,
+        btcCap: data.market_cap_percentage.btc,
+        ethCap: data.market_cap_percentage.eth,
+        volume: data.total_volume.btc,
+        marketCap: data.total_market_cap.btc,
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch coinbar data");
+    } finally {
+      setLoading(false);
     }
-  }
-
+  };
   useEffect(() => {
     fetchData();
   }, []);
+  if (loading) {
+    return (
+      <div className="w-full h-14 flex justify-center items-center text-gray-600 dark:text-gray-300">
+        Loading market data...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-14 flex flex-col justify-center items-center text-center text-gray-600 dark:text-gray-300 gap-1">
+        <p>{error}</p>
+      </div>
+    );
+  }
   return (
     <div>
-      <div className="dark:bg-[#1E1932] bg-[#353570] h-14 flex-center  w-full ">
-        <div className="container">
+      <div className=" w-full dark:bg-[#1E1932] bg-[#353570] h-14 flex-center ">
+        <div className="w-28 h-5 text-white text-xs font-mono flex  justify-center items-center gap-1">
           <PiCurrencyDollarFill className="w-5 fill-white">
             {" "}
           </PiCurrencyDollarFill>
@@ -61,15 +77,15 @@ export default function Coinbar() {
           <div> {marketData.activeCurrencies}</div>
         </div>
 
-        <div className="container">
+        <div className="w-16 h-5 text-white text-xs font-mono flex  justify-center items-center">
           <BiSolidUpArrow className="w-5 fill-teal-500 "></BiSolidUpArrow>
-          <div>{formatCompactNumber(marketData.marketCap)}</div>
+          <div>{formatCompactNumber(marketData?.marketCap)}</div>
         </div>
-        <div className="container">
+        <div className="w-16 h-5 text-white text-xs font-mono flex  justify-center items-center">
           <GoDotFill fill="white"></GoDotFill>
-          <div>{formatCompactNumber(marketData.volume)} </div>
+          <div>{formatCompactNumber(marketData?.volume)} </div>
         </div>
-        <div className="container">
+        <div className="w-28 h-5 text-white text-xs font-mono gap-2  hidden sm:flex  justify-center items-center">
           <div className=" rounded-full">
             <Image
               src={
@@ -85,12 +101,12 @@ export default function Coinbar() {
           <div className="bg-gray-400 rounded-full w-[15rem] h-2">
             <div
               className="bg-yellow-500 rounded-full h-2 "
-              style={{ width: `${marketData.btcCap}%` }}
+              style={{ width: `${marketData?.btcCap}%` }}
             ></div>
           </div>
         </div>
-        <div className="container">
-          <div className=" rounded-full  bg-blue-400">
+        <div className="w-28 h-5 text-white text-xs font-mono gap-2  hidden sm:flex  justify-center items-center">
+          <div className=" rounded-full  bg-blue-400 hidden md:block">
             <Image
               src={"https://files.coinswitch.co/public/coins/eth.png"}
               width={80}
@@ -103,11 +119,12 @@ export default function Coinbar() {
           <div className="bg-gray-400 rounded-full w-[15rem] h-2">
             <div
               className=" bg-blue-400 rounded-full  h-2"
-              style={{ width: `${marketData.ethCap}%` }}
+              style={{ width: `${marketData?.ethCap}%` }}
             ></div>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+export default Coinbar;

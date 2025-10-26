@@ -2,6 +2,7 @@
 import { CoinDataContext } from "@/app/context/coinDataContext";
 import { useOutsideClick } from "@/app/hooks/useClickOutside";
 import React, { useRef, useState, useEffect, useContext } from "react";
+import { Coin } from "@/interfaces/Coininterface";
 
 export default function Dropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,11 +51,11 @@ export default function Dropdown() {
         <span className="text-lg  ">{currentCurrency}</span>
       </button>
       {isOpen &&
-        coinData.map((coin) => {
+        coinData.map((coin: Coin, index: number) => {
           if (coin.name !== currentCurrency)
             return (
               <button
-                key={coin.id}
+                key={`${coin.id}-${index}`}
                 className="flex gap-2 items-center p-1 dark:text-white dark:bg-[#191925] w-full bg-[#CCCCFA66] text-[#424286] "
                 onClick={() => handleSelect(coin.name)}
               >

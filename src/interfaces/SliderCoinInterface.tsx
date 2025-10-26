@@ -18,4 +18,5 @@ export interface SliderCoin {
     price: number[];
   };
   selected: boolean;
+  uid?: string;
 }

@@ -12,7 +12,7 @@ const TableBar = ({
   const result = getPercentage(dividend, divisor);
 
   return (
-    <div className={`w-[180px] rounded-xl h-1 bg-gray-400  relative`}>
+    <div className={`w-48 rounded-xl h-1 bg-gray-400  relative`}>
       <div
         className={`rounded-2xl h-1 ${fillColor} absolute left-0 top-0`}
         style={{

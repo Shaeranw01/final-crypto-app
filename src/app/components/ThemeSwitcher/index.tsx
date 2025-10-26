@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { FaMoon } from "react-icons/fa6";
 import { MdOutlineWbSunny } from "react-icons/md";
 
-export default function ThemeSwitch() {
+const ThemeSwitch = () => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   // useEffect only runs on the client, so now we can safely show the UI
@@ -24,7 +24,7 @@ export default function ThemeSwitch() {
   return (
     <div>
       <button
-        className="dark:bg-[#191925]  duration-700 ease-in-out w-14 h-10 flex justify-center items-center rounded-xl bg-[#CCCCFA66]"
+        className="w-12 sm:w-24 dark:bg-[#191925]  duration-700 ease-in-out h-10 flex justify-center items-center rounded-xl bg-[#CCCCFA66]"
         onClick={handleThemeChange}
       >
         {theme === "dark" ? (
@@ -35,4 +35,5 @@ export default function ThemeSwitch() {
       </button>
     </div>
   );
-}
+};
+export default ThemeSwitch;

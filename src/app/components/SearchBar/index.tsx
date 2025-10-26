@@ -3,43 +3,26 @@
 import { useOutsideClick } from "@/app/hooks/useClickOutside";
 import { ChangeEvent, useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Coin } from "@/interfaces/Coininterface";
+import useDebouncedFunction from "@/app/hooks/useDebounce";
 
-export default function SearchBar() {
-  // const [results, setResults] = useState([]);
-  type Coin = {
-    id: string;
-    name: string;
-    symbol: string;
-    large: string;
-  };
+const SearchBar = ({ isMobile }: { isMobile: boolean }) => {
   const [data, setData] = useState<Coin[]>([]);
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  let apiKey: string = "CG-YHe92rLkyEoghZERKMWNmW5K";
   const ref = useRef(null);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
 
-  //timer as ueref is not updated on every rerender
-  const timer = useRef();
-  const debounce = (callback, waitTime) => {
-    return (...arg) => {
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => {
-        callback(...arg);
-      }, waitTime);
-    };
-  };
-  const fetchData = async () => {
+  const fetchData = async (q: string) => {
     const response = await fetch(
-      `https://api.coingecko.com/api/v3/search?key=CG-YHe92rLkyEoghZERKMWNmW5K&query=${query.toLowerCase()}`
+      `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/search?key=CG-YHe92rLkyEoghZERKMWNmW5K&query=${q.toLowerCase()}`
     );
     const allData = await response.json();
-    console.log(allData.coins);
     setData(allData.coins);
   };
-  const debouncedFetchData = debounce(fetchData, 100);
+  const debouncedFetchData = useDebouncedFunction(fetchData, 100);
 
   const closeList = () => {
     setIsOpen(false);
@@ -47,20 +30,25 @@ export default function SearchBar() {
   const toggleDropDown = () => {
     setIsOpen(!isOpen);
     setQuery("");
-    console.log("clicking the button");
   };
 
   useOutsideClick(ref, closeList);
 
   useEffect(() => {
-    if (query) {
-      debouncedFetchData();
+    if (query.trim() === "") {
+      setIsOpen(false);
+    } else {
+      setIsOpen(true);
+      debouncedFetchData(query);
     }
+    // if (query) {
+    //   debouncedFetchData(query);
+    // }
   }, [query]);
 
   return (
     <div
-      className=" h-10 w-full dark:bg-[#191925] bg-[#CCCCFA66] flex  relative flex-col gap-4  p-2 rounded-md "
+      className=" h-10 w-full flex flex-col gap-4  rounded-md "
       ref={ref}
       onClick={toggleDropDown}
     >
@@ -69,15 +57,19 @@ export default function SearchBar() {
         value={query}
         onChange={handleChange}
         placeholder="Search..."
-        className="rounded-md w-full outline-none dark:bg-[#191925]  h-full bg-transparent font-light placeholder-[#424286] dark:placeholder-white"
+        className="rounded-md w-full outline-none  h-full bg-transparent font-extralight text-sm placeholder-[#424286] dark:placeholder-white text-[#424286] dark:text-white"
       />
       {isOpen && (
-        <div className=" rounded-md z-50 absolute overflow-auto left-0 w-full h-80 mt-6">
+        <div
+          className={`${
+            isMobile ? "w-full mt-14 " : "w-56 mt-11"
+          } rounded-md absolute z-50 overflow-auto left-0 w-56 h-80`}
+        >
           {data.length > 0 &&
-            data.map((coin) => (
+            data.map((coin, index) => (
               <button
-                key={coin.id}
-                className="flex justify-start pt-4 dark:bg-[#191925] bg-[#CCCCFA66] text-[#424286] pl-2  w-full text-left  dark:text-white font-light"
+                key={`${coin.id}-${index}`}
+                className="flex justify-start pt-4 dark:bg-[#191925] bg-[#CCCCFA66] text-[#424286] pl-2  w-full text-left text-sm dark:text-white font-light"
               >
                 <Link href={`/coin/${coin.id}`}>{coin.name}</Link>
               </button>
@@ -86,4 +78,5 @@ export default function SearchBar() {
       )}
     </div>
   );
-}
+};
+export default SearchBar;

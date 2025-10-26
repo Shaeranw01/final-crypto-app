@@ -6,22 +6,38 @@ import { useContext, useState, useEffect } from "react";
 import { Coin } from "@/interfaces/Coininterface";
 import { BsAspectRatio } from "react-icons/bs";
 import { Line } from "react-chartjs-2";
+import { useCoinContext } from "@/app/hooks/useCoinContext";
+import { ScriptableContext } from "chart.js/auto";
+import { ChartArea } from "chart.js/auto";
 
-export default function ConvertorChart({
+const ConvertorChart = ({
   fromCoin,
   toCoin,
 }: {
   fromCoin: Coin;
   toCoin: Coin;
-}) {
+}) => {
   const [priceData, setPriceData] = useState({
-    fromCoinData: [],
-    toCoinData: [],
-    timeData: [],
+    displayData: [] as number[],
+    timeData: [] as string[],
   });
-  const intervals = {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { debouncedCurrency } = useCoinContext();
+  const [isClicked, setClicked] = useState("30d");
+  type TimeRange = "1d" | "7d" | "14d" | "30d" | "365d";
+
+  const intervals: Record<TimeRange, { days: number; interval: string }> = {
+    "1d": {
+      days: 1,
+      interval: "daily",
+    },
     "7d": {
       days: 7,
+      interval: "daily",
+    },
+    "14d": {
+      days: 14,
       interval: "daily",
     },
     "30d": {
@@ -34,71 +50,72 @@ export default function ConvertorChart({
     },
   };
 
-  async function getData(time, coinId1, coinId2) {
+  async function getData(time: TimeRange, coinId1: string, coinId2: string) {
     const { days, interval } = intervals[time];
-    const data1 = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=usd&days=${days}&interval=${interval}`
-    );
-    const jsonData1 = await data1.json();
+    setLoading(true);
+    setError(null);
 
-    const timeArray = jsonData1?.prices?.map((price) =>
-      new Date(price[0] * 1000).getDate()
-    );
+    try {
+      const [res1, res2] = await Promise.all([
+        fetch(
+          `https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+        ),
+        fetch(
+          `https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+        ),
+      ]);
 
-    const priceData1 = jsonData1?.prices?.map((price) => price[1]);
+      if (!res1.ok || !res2.ok) {
+        throw new Error("Failed to fetch chart data. Please try again later.");
+      }
 
-    const data2 = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=usd&days=${days}&interval=${interval}`
-    );
-    const jsonData2 = await data2.json();
+      const [json1, json2] = await Promise.all([res1.json(), res2.json()]);
 
-    const priceData2 = jsonData2?.prices?.map((price) => price[1]);
+      if (!json1?.prices || !json2?.prices) {
+        throw new Error("Incomplete data received from API.");
+      }
+      console.log("converrtor time", json1.prices);
+      const timeArray = json1.prices.map((p: number[]) =>
+        new Date(p[0]).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })
+      );
 
-    setPriceData({
-      fromCoinData: priceData1,
-      toCoinData: priceData2,
-      timeData: timeArray,
-    });
+      const priceData1 = json1.prices.map((p: number[]) => p[1]);
+      const priceData2 = json2.prices.map((p: number[]) => p[1]);
+
+      const ratioData = priceData1.map((val: number, idx: number) => {
+        const denom = priceData2[idx] || 1;
+        return val / denom;
+      });
+
+      setPriceData({
+        displayData: ratioData,
+        timeData: timeArray,
+      });
+    } catch (err: any) {
+      setError(err.message || "Something went wrong fetching chart data.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   //   getData("30d", fromCoin?.id, toCoin?.id);
-
   useEffect(() => {
-    getData("365d", fromCoin?.id, toCoin?.id);
-  }, [fromCoin.id, toCoin.id]);
-
-  //   const Line = dynamic(
-  //     () => import("react-chartjs-2").then((mod) => mod.Line),
-  //     {
-  //       ssr: false,
-  //     }
-  //   );
-
-  const bgColor = [
-    "rgba(116, 116, 242, 0.6)",
-    "rgba(116, 116, 242, 0.01)",
-    "rgba(127, 255, 212,1)",
-    "rgba(127, 255, 212,0.1)",
-  ];
-  function getGradient(ctx, chartArea, color1, color2) {
-    let gradient = ctx.createLinearGradient(
-      0,
-      chartArea.top,
-      0,
-      chartArea.bottom
-    );
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
-    return gradient;
-  }
+    if (fromCoin?.id && toCoin?.id) {
+      getData("30d", fromCoin.id, toCoin.id);
+    }
+  }, [fromCoin.id, toCoin.id, debouncedCurrency]);
 
   const label = priceData.timeData;
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top",
+        display: false,
       },
     },
     scales: {
@@ -114,6 +131,29 @@ export default function ConvertorChart({
       },
 
       x: {
+        ticks: {
+          display: true,
+          padding: 0,
+          callback: function (
+            this: import("chart.js").Scale, // ✅ explicitly declare `this`
+            tickValue: string | number,
+            index: number,
+            ticks: any[]
+          ) {
+            const label = this.getLabelForValue(tickValue as number) as string;
+
+            if (label.includes(" ")) return label.split(" ")[1];
+
+            const date = new Date(label);
+            if (!isNaN(date.getTime())) return date.getDate().toString();
+
+            return label;
+          },
+          minRotation: 0, // 👈 prevent slant
+          maxRotation: 0, // 👈 prevent slant
+          autoSkip: true, // ✅ automatically skips labels to avoid crowding
+          maxTicksLimit: 25, // max number of ticks shown
+        },
         grid: {
           drawTicks: false,
           display: false,
@@ -126,39 +166,18 @@ export default function ConvertorChart({
     labels: label,
     datasets: [
       {
-        label: fromCoin.id,
-        data: priceData.fromCoinData,
-        backgroundColor: function (context) {
+        data: priceData.displayData,
+        backgroundColor: function (context: ScriptableContext<"line">) {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
 
           // This case happens on initial chart load
           if (!chartArea) return;
-          return getGradient(ctx, chartArea, bgColor[0], bgColor[1]);
+          return getGradient(ctx, chartArea, "#7878FA");
         },
-        borderColor: "rgba(120, 120, 250, 1)",
+        borderColor: "#7878FA",
 
-        // borderWidth: 2, removed so getting the default border width
-
-        tension: 0.4, //to create a curved chart instead of a straight line
-        pointRadius: 0, // to remove the dots
-        hoverPointRadius: 0, // to remove the values appearing on hover
-        fill: true,
-      },
-      {
-        label: toCoin.id,
-        data: priceData.toCoinData,
-        backgroundColor: function (context) {
-          const chart = context.chart;
-          const { ctx, chartArea } = chart;
-
-          // This case happens on initial chart load
-          if (!chartArea) return;
-          return getGradient(ctx, chartArea, bgColor[2], bgColor[3]);
-        },
-        borderColor: "rgb(127, 255, 212,1)",
-
-        // borderWidth: 2, removed so getting the default border width
+        borderWidth: 1,
 
         tension: 0.4, //to create a curved chart instead of a straight line
         pointRadius: 0, // to remove the dots
@@ -167,32 +186,106 @@ export default function ConvertorChart({
       },
     ],
   };
+  function getGradient(
+    ctx: CanvasRenderingContext2D,
+    chartArea: ChartArea,
+    color: string
+  ) {
+    let gradient = ctx.createLinearGradient(
+      0,
+      chartArea.top,
+      0,
+      chartArea.bottom
+    );
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(0.6, color + "99");
+    gradient.addColorStop(0.8, color + "66");
+    gradient.addColorStop(1, color + "00");
+    return gradient;
+  }
+  if (loading) {
+    return (
+      <div className="w-full h-72 flex justify-center items-center text-gray-600 dark:text-gray-300">
+        Loading chart data...
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+      <div className="w-full h-72 flex flex-col justify-center items-center text-center gap-2  text-gray-500 dark:text-gray-400">
+        <p>{error}</p>
+      </div>
+    );
+  }
   return (
-    <div className="w-full mt-5 flex flex-col gap-5">
-      <div className=" w-full h-[300px]">
+    <div className="w-full mt-10 flex flex-col gap-5">
+      <div className=" w-full h-72 p-0 m-0">
         <Line data={data} options={options}></Line>
       </div>
-      <div className="flex gap-3">
+      <div className="hidden sm:flex sm:w-80 p-2  gap-3 justify-between rounded-lg  bg-[#CCCCFA66] dark:bg-[#232336] my-5 text-[#424286]  dark:text-white">
         <button
-          className="w-14 h-10 bg-red-200 rounded-lg p-3"
-          onClick={() => getData("7d", fromCoin?.id, toCoin?.id)}
+          className={`${
+            isClicked === "1d" &&
+            "bg-[#6161D680] text-[#424286]  dark:text-white dark:bg-[#6161D680] "
+          } w-16 h-10 rounded-lg p-2`}
+          onClick={() => {
+            getData("1d", fromCoin?.id, toCoin?.id);
+            setClicked("1d");
+          }}
+        >
+          1D
+        </button>
+        <button
+          className={`${
+            isClicked === "7d" &&
+            "bg-[#6161D680] text-[#424286]  dark:text-white dark:bg-[#6161D680] "
+          } w-16 h-10 rounded-lg p-2`}
+          onClick={() => {
+            getData("7d", fromCoin?.id, toCoin?.id);
+            setClicked("7d");
+          }}
         >
           7D
         </button>
         <button
-          className="w-14 h-10 bg-red-200 rounded-lg p-3 "
-          onClick={() => getData("30d", fromCoin?.id, toCoin?.id)}
+          className={`${
+            isClicked === "14d" &&
+            "bg-[#6161D680] text-[#424286]  dark:text-white dark:bg-[#6161D680] "
+          } w-16 h-10 rounded-lg p-2`}
+          onClick={() => {
+            getData("14d", fromCoin?.id, toCoin?.id);
+            setClicked("14d");
+          }}
         >
-          30D
+          14D
         </button>
         <button
-          className="w-14 h-10 bg-red-200 rounded-lg p-3"
-          onClick={() => getData("365d", fromCoin?.id, toCoin?.id)}
+          className={`${
+            isClicked === "30d" &&
+            "bg-[#6161D680] text-[#424286]  dark:text-white dark:bg-[#6161D680] "
+          } w-16 h-10 rounded-lg p-2`}
+          onClick={() => {
+            getData("30d", fromCoin?.id, toCoin?.id);
+            setClicked("30d");
+          }}
         >
-          365D
+          1M
+        </button>
+        <button
+          className={`${
+            isClicked === "365d" &&
+            "bg-[#6161D680] text-[#424286]  dark:text-white dark:bg-[#6161D680] "
+          } w-16 h-10 rounded-lg p-2`}
+          onClick={() => {
+            getData("365d", fromCoin?.id, toCoin?.id);
+            setClicked("365d");
+          }}
+        >
+          1Y
         </button>
       </div>
     </div>
   );
-}
+};
+export default ConvertorChart;

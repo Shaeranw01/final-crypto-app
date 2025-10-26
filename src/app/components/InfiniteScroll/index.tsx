@@ -1,37 +1,24 @@
 "use client";
-import { useState, useEffect, useContext } from "react";
+import { useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Coin } from "@/interfaces/Coininterface";
 import CoinRowItem from "../CoinRowItem";
-import { CoinDataContext } from "@/app/context/coinDataContext";
 
-export default function InfiniteScrollComponent() {
-  //   const [coinData, setData] = useState<Coin[]>([]);
-  //   const [page, setPage] = useState(1);
+import { useCoinContext } from "@/app/hooks/useCoinContext";
 
-  const { coinData, fetchMoreData } = useContext(CoinDataContext);
+const InfiniteScrollComponent = () => {
+  const { coinData, fetchMoreData, debouncedCurrency } = useCoinContext();
 
   useEffect(() => {
     fetchMoreData();
-  }, []);
-
-  //   const fetchMoreData = async () => {
-  //     const response = await fetch(
-  //       `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=${page}&sparkline=true&price_change_percentage=1h%2C24h%2C7d`
-  //     );
-  //     const data = await response.json();
-
-  //     setData(coinData.concat(data));
-
-  //     setPage(page + 1);
-  //     console.log(coinData);
-  //   };
+    console.log("fetchmore data called");
+  }, [debouncedCurrency]);
 
   return (
     <div className="w-full">
-      <div className="flex  justify-between p-[20px] text-[#424286] dark:text-white  dark:bg-[#191925] h-[50px] ">
+      <div className="hidden sm:flex  justify-between p-[20px] text-[#424286] dark:text-white h-[50px]">
         <div className="w-4">#</div>
-        <div className="w-24">Name</div>
+        <div className="w-32">Name</div>
         <div className="w-20">Price</div>
         <div className="w-14">1h%</div>
         <div className="w-14">24h%</div>
@@ -44,17 +31,22 @@ export default function InfiniteScrollComponent() {
         dataLength={coinData.length} //This is important field to render the next data
         next={fetchMoreData}
         hasMore={true}
-        loader={<h4>Loading...</h4>}
+        loader={
+          <div className="flex justify-center items-center my-10">
+            <div className="w-10 h-10 border-2 border-[#424286] border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        }
         endMessage={
           <p style={{ textAlign: "center" }}>
             <b>Yay! You have seen it all</b>
           </p>
         }
       >
-        {coinData.map((coin, index) => (
-          <CoinRowItem coin={coin} index={index} key={coin.id} />
+        {coinData.map((coin: Coin, index: number) => (
+          <CoinRowItem coin={coin} index={index} key={`${coin.id}-${index}`} />
         ))}
       </InfiniteScroll>
     </div>
   );
-}
+};
+export default InfiniteScrollComponent;
