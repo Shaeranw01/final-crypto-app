@@ -1,14 +1,15 @@
 "use client";
-import { useContext } from "react";
+
 import InfiniteScrollComponent from "./components/InfiniteScroll";
-import { CoinDataContext } from "./context/coinDataContext";
-import Convertor from "./components/Convertor";
+
 import Link from "next/link";
 import Carousel from "./components/Carousel";
 import ChartContainer from "./components/ChartContainer";
 
+import { useCoinContext } from "./hooks/useCoinContext";
+
 export default function Home() {
-  const { showConvertor, setShowConvertor } = useContext(CoinDataContext);
+  const { showConvertor, setShowConvertor } = useCoinContext();
 
   return (
     <div>
@@ -36,8 +37,6 @@ export default function Home() {
             </button>
           </div>
         </div>
-
-        {/* {showConvertor && <Convertor />} */}
 
         {!showConvertor && <Carousel />}
         {!showConvertor && <ChartContainer />}

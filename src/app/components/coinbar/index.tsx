@@ -8,8 +8,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 
 import { GoDotFill } from "react-icons/go";
-import formatCompactNumber from "@/utlis/getFormattedPrice";
 
+import formatCompactNumber from "@/utlis/getFormattedPrice";
 const Coinbar = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
