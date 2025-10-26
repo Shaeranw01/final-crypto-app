@@ -41,8 +41,6 @@ const ComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
 
   const { debouncedCurrency } = useCoinContext();
 
-  type ChartType = "line" | "bar";
-
   type TimeRange = "7d" | "30d" | "365d";
   const intervals: Record<TimeRange, { days: number; interval: string }> = {
     "7d": { days: 7, interval: "daily" },
@@ -91,8 +89,6 @@ const ComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
     });
   }
 
-  //   getData("30d", fromCoin?.id, toCoin?.id);
-
   useEffect(() => {
     getData("365d", id1, id2);
   }, [id1, id2]);
@@ -116,124 +112,115 @@ const ComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
   }
 
   const label = comparisonData.timeData;
-  const options: ChartOptions<"line" | "bar"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: false,
-        min: 0,
-        ticks: { display: false },
-        grid: {
-          drawTicks: false,
-          display: false,
-        },
-      },
 
-      x: {
-        ticks: {
-          display: true,
-          padding: 0,
-          callback: function (
-            tickValue: string | number,
-            index: number,
-            ticks: any[]
-          ): string | number {
-            // Get the label from Chart.js
-            const label = this.getLabelForValue(tickValue as number) as string;
-
-            // If label is like "Jan 14" -> keep just 14
-            if (typeof label === "string" && label.includes(" ")) {
-              return label.split(" ")[1];
-            }
-
-            // If ISO date -> return just day number
-            const date = new Date(label);
-            if (!isNaN(date.getTime())) {
-              return date.getDate().toString();
-            }
-
-            // fallback: return original label
-            return label;
-          },
-        },
-        grid: {
-          drawTicks: false,
-          display: false,
-        },
-      },
-    },
-  };
-
-  const baseOptions: ChartOptions<ChartType> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: false,
-        min: 0,
-        ticks: { display: false },
-        grid: {
-          drawTicks: false,
-          display: false,
-        },
-      },
-
-      x: {
-        ticks: {
-          display: true,
-          padding: 0,
-          callback: function (
-            tickValue: string | number,
-            index: number,
-            ticks: any[]
-          ): string | number {
-            // Get the label from Chart.js
-            const label = this.getLabelForValue(tickValue as number) as string;
-
-            // If label is like "Jan 14" -> keep just 14
-            if (typeof label === "string" && label.includes(" ")) {
-              return label.split(" ")[1];
-            }
-
-            // If ISO date -> return just day number
-            const date = new Date(label);
-            if (!isNaN(date.getTime())) {
-              return date.getDate().toString();
-            }
-
-            // fallback: return original label
-            return label;
-          },
-        },
-        grid: {
-          drawTicks: false,
-          display: false,
-        },
-      },
-    },
-  };
   const lineOptions: ChartOptions<"line"> = {
-    ...baseOptions,
-    elements: {
-      line: { tension: 0.4 },
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+        min: 0,
+        ticks: { display: false },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
+
+      x: {
+        ticks: {
+          display: true,
+          padding: 0,
+          callback: function (
+            tickValue: string | number,
+            index: number,
+            ticks: any[]
+          ): string | number {
+            // Get the label from Chart.js
+            const label = this.getLabelForValue(tickValue as number) as string;
+
+            // If label is like "Jan 14" -> keep just 14
+            if (typeof label === "string" && label.includes(" ")) {
+              return label.split(" ")[1];
+            }
+
+            // If ISO date -> return just day number
+            const date = new Date(label);
+            if (!isNaN(date.getTime())) {
+              return date.getDate().toString();
+            }
+
+            // fallback: return original label
+            return label;
+          },
+        },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
     },
   };
 
-  const barOptions = {
-    ...baseOptions,
-    barPercentage: 0.8,
+  const barOptions: ChartOptions<"bar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+        min: 0,
+        ticks: { display: false },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
+
+      x: {
+        ticks: {
+          display: true,
+          padding: 0,
+          callback: function (
+            tickValue: string | number,
+            index: number,
+            ticks: any[]
+          ): string | number {
+            // Get the label from Chart.js
+            const label = this.getLabelForValue(tickValue as number) as string;
+
+            // If label is like "Jan 14" -> keep just 14
+            if (typeof label === "string" && label.includes(" ")) {
+              return label.split(" ")[1];
+            }
+
+            // If ISO date -> return just day number
+            const date = new Date(label);
+            if (!isNaN(date.getTime())) {
+              return date.getDate().toString();
+            }
+
+            // fallback: return original label
+            return label;
+          },
+        },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
+    },
   };
+
   const lineData = {
     labels: label,
     datasets: [
@@ -339,7 +326,7 @@ const ComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
           <Line data={lineData} options={lineOptions}></Line>
         </div>
         <div className="w-full h-[350px] dark:bg-[#191932] bg-white p-2 box-border flex justify-center rounded-lg">
-          <Bar data={barData} options={options}></Bar>
+          <Bar data={barData} options={barOptions}></Bar>
         </div>
       </div>
 

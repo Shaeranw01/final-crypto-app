@@ -9,6 +9,7 @@ import { ChartArea } from "chart.js";
 import { ScriptableContext } from "chart.js";
 import { Chart } from "chart.js";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
+import { ChartOptions } from "chart.js";
 
 const HomeChart = () => {
   const { debouncedCurrency } = useCoinContext();
@@ -116,7 +117,7 @@ const HomeChart = () => {
     [debouncedCurrency]
   );
 
-  const options = {
+  const lineOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     layout: {
@@ -155,7 +156,45 @@ const HomeChart = () => {
       },
     },
   };
+  const barOptions: ChartOptions<"bar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        right: 0,
+        left: 0,
+      },
+    },
+    scales: {
+      y: {
+        display: false,
+        ticks: { display: false },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
 
+      x: {
+        display: true,
+        border: {
+          display: false,
+        },
+        ticks: {
+          display: true,
+          padding: 0,
+          minRotation: 0, // 👈 prevent slant
+          maxRotation: 0, // 👈 prevent slant
+          autoSkip: true, // ✅ automatically skips labels to avoid crowding
+          maxTicksLimit: 18, // max number of ticks shown
+        },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
+    },
+  };
   const data = useMemo(() => {
     return {
       labels: chartData.datesData,
@@ -227,7 +266,7 @@ const HomeChart = () => {
             ) : chartError ? (
               <p className="text-gray-500 dark:text-gray-300 ">{chartError}</p>
             ) : (
-              <Line data={data} options={options} />
+              <Line data={data} options={lineOptions} />
             )}
           </div>
         </div>
@@ -240,7 +279,7 @@ const HomeChart = () => {
             ) : chartError ? (
               <p className="text-gray-500 dark:text-gray-300">{chartError}</p>
             ) : (
-              <Bar data={data2} options={options}></Bar>
+              <Bar data={data2} options={barOptions}></Bar>
             )}
           </div>
         </div>

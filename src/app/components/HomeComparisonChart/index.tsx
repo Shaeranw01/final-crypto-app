@@ -136,7 +136,43 @@ const HomeComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
 
   const label = comparisonData.timeData;
 
-  const options: ChartOptions<"line" | "bar"> = {
+  const lineOptions: ChartOptions<"line"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        display: false,
+        ticks: { display: false },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
+
+      x: {
+        ticks: {
+          display: true,
+          padding: 0,
+          minRotation: 0, // 👈 prevent slant
+          maxRotation: 0, // 👈 prevent slant
+          autoSkip: true, // ✅ automatically skips labels to avoid crowding
+          maxTicksLimit: 18, // max number of ticks shown
+        },
+        grid: {
+          drawTicks: false,
+          display: false,
+        },
+      },
+    },
+  };
+
+  const barOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -284,7 +320,7 @@ const HomeComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
               {errorMessage}
             </p>
           ) : (
-            <Line data={lineData} options={options} />
+            <Line data={lineData} options={lineOptions} />
           )}
         </div>
         <div className="flex-1 h-[350px] dark:bg-[#191932] bg-white p-2 box-border flex justify-center rounded-lg">
@@ -295,7 +331,7 @@ const HomeComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
               {errorMessage}
             </p>
           ) : (
-            <Bar data={barData} options={options} />
+            <Bar data={barData} options={barOptions} />
           )}
         </div>
       </div>
