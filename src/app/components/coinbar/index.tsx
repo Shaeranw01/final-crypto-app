@@ -20,7 +20,7 @@ const Coinbar = () => {
     volume: 0,
     marketCap: 0,
   });
-  console.log("coin bar rendered");
+
   const fetchData = async () => {
     setLoading(true);
     setError(null);
