@@ -42,8 +42,14 @@ const Coinbar = () => {
         volume: data.total_volume.btc,
         marketCap: data.total_market_cap.btc,
       });
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch coinbar data");
+    } catch (err: unknown) {
+      let message = "Failed to fetch coinbar data";
+
+      if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
     } finally {
       setLoading(false);
     }

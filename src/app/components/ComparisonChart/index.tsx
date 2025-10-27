@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { ChartArea } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
+import { useCallback } from "react";
 
 import {
   Chart as ChartJS,
@@ -48,50 +49,52 @@ const ComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
     "365d": { days: 365, interval: "daily" },
   };
   const [isClicked, setClicked] = useState("365d");
-  async function getData(time: TimeRange, coinId1: string, coinId2: string) {
-    const { days, interval } = intervals[time];
 
-    const data1 = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
-    );
-    const jsonData1 = await data1.json();
+  const getData = useCallback(
+    async (time: TimeRange, coinId1: string, coinId2: string) => {
+      const { days, interval } = intervals[time];
 
-    const timeArray = jsonData1?.prices?.map((price: [number, number]) =>
-      new Date(price[0] * 1000).getDate()
-    );
+      // Fetch coin 1
+      const data1 = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+      );
+      const jsonData1 = await data1.json();
+      const timeArray =
+        jsonData1?.prices?.map((price: [number, number]) =>
+          new Date(price[0]).getDate()
+        ) || [];
+      const priceData1 =
+        jsonData1?.prices?.map((price: [number, number]) => price[1]) || [];
+      const volumeArray1 =
+        jsonData1?.total_volumes?.map(
+          (volume: [number, number]) => volume[1]
+        ) || [];
 
-    const priceData1 = jsonData1?.prices?.map(
-      (price: [number, number]) => price[1]
-    );
+      // Fetch coin 2
+      const data2 = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+      );
+      const jsonData2 = await data2.json();
+      const priceData2 =
+        jsonData2?.prices?.map((price: [number, number]) => price[1]) || [];
+      const volumeArray2 =
+        jsonData2?.total_volumes?.map(
+          (volume: [number, number]) => volume[1]
+        ) || [];
 
-    const volumeArray1 = jsonData1.total_volumes.map(
-      (volume: [number, number]) => volume[1]
-    );
-
-    const data2 = await fetch(
-      `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
-    );
-    const jsonData2 = await data2.json();
-
-    const priceData2 = jsonData2?.prices?.map(
-      (price: [number, number]) => price[1]
-    );
-    const volumeArray2 = jsonData2.total_volumes.map(
-      (volume: [number, number]) => volume[1]
-    );
-
-    setComparisonData({
-      selectedCoin1Data: priceData1,
-      selectedCoin2Data: priceData2,
-      volumeData1: volumeArray1,
-      volumeData2: volumeArray2,
-      timeData: timeArray,
-    });
-  }
-
+      setComparisonData({
+        selectedCoin1Data: priceData1,
+        selectedCoin2Data: priceData2,
+        volumeData1: volumeArray1,
+        volumeData2: volumeArray2,
+        timeData: timeArray,
+      });
+    },
+    [debouncedCurrency]
+  );
   useEffect(() => {
     getData("365d", id1, id2);
-  }, [id1, id2]);
+  }, [getData, id1, id2]);
 
   function createGradient(
     ctx: CanvasRenderingContext2D,
@@ -116,53 +119,28 @@ const ComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
   const lineOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-    },
+    plugins: { legend: { position: "top" } },
     scales: {
       y: {
         beginAtZero: false,
         min: 0,
         ticks: { display: false },
-        grid: {
-          drawTicks: false,
-          display: false,
-        },
+        grid: { drawTicks: false, display: false },
       },
-
       x: {
         ticks: {
           display: true,
           padding: 0,
-          callback: function (
-            tickValue: string | number,
-            index: number,
-            ticks: any[]
-          ): string | number {
-            // Get the label from Chart.js
-            const label = this.getLabelForValue(tickValue as number) as string;
-
-            // If label is like "Jan 14" -> keep just 14
-            if (typeof label === "string" && label.includes(" ")) {
+          callback: function (_tickValue: string | number) {
+            const label = this.getLabelForValue(_tickValue as number) as string;
+            if (typeof label === "string" && label.includes(" "))
               return label.split(" ")[1];
-            }
-
-            // If ISO date -> return just day number
             const date = new Date(label);
-            if (!isNaN(date.getTime())) {
-              return date.getDate().toString();
-            }
-
-            // fallback: return original label
+            if (!isNaN(date.getTime())) return date.getDate().toString();
             return label;
           },
         },
-        grid: {
-          drawTicks: false,
-          display: false,
-        },
+        grid: { drawTicks: false, display: false },
       },
     },
   };
@@ -190,26 +168,12 @@ const ComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
         ticks: {
           display: true,
           padding: 0,
-          callback: function (
-            tickValue: string | number,
-            index: number,
-            ticks: any[]
-          ): string | number {
-            // Get the label from Chart.js
-            const label = this.getLabelForValue(tickValue as number) as string;
-
-            // If label is like "Jan 14" -> keep just 14
-            if (typeof label === "string" && label.includes(" ")) {
+          callback: function (_tickValue: string | number) {
+            const label = this.getLabelForValue(_tickValue as number) as string;
+            if (typeof label === "string" && label.includes(" "))
               return label.split(" ")[1];
-            }
-
-            // If ISO date -> return just day number
             const date = new Date(label);
-            if (!isNaN(date.getTime())) {
-              return date.getDate().toString();
-            }
-
-            // fallback: return original label
+            if (!isNaN(date.getTime())) return date.getDate().toString();
             return label;
           },
         },

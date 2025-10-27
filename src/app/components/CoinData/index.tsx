@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { CiLink } from "react-icons/ci";
 import { FiCopy } from "react-icons/fi";
@@ -14,6 +14,7 @@ import { CoinPage } from "@/interfaces/CoinPageInterface";
 import formatDate from "@/utlis/getFormattedDate";
 import { trimName } from "@/utlis/trimName";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
+import { useCallback } from "react";
 
 const CoinData = ({ coinId }: { coinId: string }) => {
   const { selectedCurrency, currencySymbol } = useCoinContext();
@@ -25,7 +26,7 @@ const CoinData = ({ coinId }: { coinId: string }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMoreData = async () => {
+  const fetchMoreData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -41,16 +42,20 @@ const CoinData = ({ coinId }: { coinId: string }) => {
       }
 
       setData(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to load coin data");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to load coin data");
+      }
     } finally {
       setLoading(false);
     }
-  };
-  //Ensure fetch actually runs before early return
+  }, [coinId]);
+
   useEffect(() => {
     fetchMoreData();
-  }, [coinId]);
+  }, [fetchMoreData]);
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center text-lg text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-[#0f0f1a] transition-colors duration-300">
@@ -65,7 +70,7 @@ const CoinData = ({ coinId }: { coinId: string }) => {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center gap-4 text-center bg-gray-50 dark:bg-[#0f0f1a] transition-colors duration-300">
         <p className="text-lg font-semibold text-red-600 dark:text-red-400">
-          ⚠️ Failed to load coin data
+          Failed to load coin data
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
           {error}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useOutsideClick } from "@/app/hooks/useClickOutside";
-import { ChangeEvent, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Coin } from "@/interfaces/Coininterface";
 import useDebouncedFunction from "@/app/hooks/useDebounce";
@@ -10,18 +10,18 @@ const SearchBar = ({ isMobile }: { isMobile: boolean }) => {
   const [data, setData] = useState<Coin[]>([]);
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
-
-  const fetchData = async (q: string) => {
+  const fetchData = useCallback(async (q: string) => {
     const response = await fetch(
       `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/search?key=CG-YHe92rLkyEoghZERKMWNmW5K&query=${q.toLowerCase()}`
     );
     const allData = await response.json();
-    setData(allData.coins);
-  };
+    setData(allData.coins || []);
+  }, []);
+
   const debouncedFetchData = useDebouncedFunction(fetchData, 100);
 
   const closeList = () => {
@@ -41,10 +41,7 @@ const SearchBar = ({ isMobile }: { isMobile: boolean }) => {
       setIsOpen(true);
       debouncedFetchData(query);
     }
-    // if (query) {
-    //   debouncedFetchData(query);
-    // }
-  }, [query]);
+  }, [query, debouncedFetchData]);
 
   return (
     <div

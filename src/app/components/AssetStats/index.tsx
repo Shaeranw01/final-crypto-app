@@ -25,20 +25,6 @@ const AssetStats = ({
 
     setAssetCoins(filteredAssets);
   };
-  // useEffect(() => {
-  //   if (!coinData?.length) return;
-  //   const updatedAssets = assetCoins.map((asset) => {
-  //     const updated = coinData.find((coin) => coin.id === asset.id);
-  //     if (!updated) return;
-  //     return {
-  //       ...asset,
-  //       current_price: updated.current_price,
-  //       total_volume: updated.total_volume,
-  //       market_cap: updated.market_cap,
-  //     };
-  //   });
-  //   setAssetCoins(updatedAssets);
-  // }, [coinData]);
 
   useEffect(() => {
     setAssetCoins((prevAssets) =>
@@ -54,7 +40,7 @@ const AssetStats = ({
         };
       })
     );
-  }, [coinData]);
+  }, [coinData, setAssetCoins]);
   return (
     <div className="w-full flex items-center justify-center">
       <div className="w-full mt-10 mb-10 z-100 flex flex-col gap-4">

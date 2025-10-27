@@ -1,10 +1,9 @@
 import { TiDeleteOutline } from "react-icons/ti";
 import { Dispatch, SetStateAction } from "react";
-import { CoinDataContext } from "@/app/context/coinDataContext";
 import { useOutsideClick } from "@/app/hooks/useClickOutside";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
 
-import React, { useRef, useState, useContext, ChangeEvent } from "react";
+import React, { useRef, useState, ChangeEvent } from "react";
 import Image from "next/image";
 
 import { GoStack } from "react-icons/go";
@@ -21,7 +20,6 @@ const AssetPopUp = ({
   assetCoins,
   setAssetCoins,
 }: AssetPopUpProps) => {
-  const [showAsset, setAsset] = useState(true);
   const [amount, setAmount] = useState<number>(0);
   const [dateValue, setdateValue] = useState("");
 
@@ -30,7 +28,7 @@ const AssetPopUp = ({
     setAmount(number);
   };
   const [isOpen, setIsOpen] = useState(false);
-  // const [mounted, setMounted] = useState(false);
+
   const { coinData } = useCoinContext();
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null);
 

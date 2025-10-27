@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useContext, ChangeEvent } from "react";
-import { CoinDataContext } from "@/app/context/coinDataContext";
+import { useState, useEffect, ChangeEvent } from "react";
+
 import { Coin } from "@/interfaces/Coininterface";
 import ConvertorRow from "../ConvertorRow";
 import ConvertorChart from "../ConvertorChart";
@@ -30,7 +30,7 @@ const Convertor = () => {
     }
     setAmount(value);
   };
-  console.log("convertor rendered");
+
   useEffect(() => {
     if (coinData.length > 0) {
       const firstCoin: Coin = coinData[0];
@@ -40,7 +40,7 @@ const Convertor = () => {
       setFromCoin(firstCoin);
       setToCoin(secondCoin);
     }
-  }, []);
+  }, [coinData]);
 
   useEffect(() => {
     if (fromCoin != null && toCoin != null) {
@@ -54,9 +54,7 @@ const Convertor = () => {
   const handleSwitch = () => {
     setToCoin(fromCoin);
     setFromCoin(toCoin);
-    setSwitch(!setSwitch);
-    // console.log("new to", toCoin);
-    // console.log("new from", fromCoin);
+    setSwitch(!switchMode);
   };
   if (switchMode) {
     fromAmount = amount;

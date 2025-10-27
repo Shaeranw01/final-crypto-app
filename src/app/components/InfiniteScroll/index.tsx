@@ -11,8 +11,7 @@ const InfiniteScrollComponent = () => {
 
   useEffect(() => {
     fetchMoreData();
-    console.log("fetchmore data called");
-  }, [debouncedCurrency]);
+  }, [debouncedCurrency, fetchMoreData]);
 
   return (
     <div className="w-full">

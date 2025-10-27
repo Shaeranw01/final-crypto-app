@@ -17,13 +17,12 @@ import Image from "next/image";
 import { GoDotFill } from "react-icons/go";
 
 import formatCompactNumber from "@/utlis/getFormattedPrice";
-import Coinbar from "../Coinbar";
 import Link from "next/link";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
 
 const Navbar = () => {
   const { setShowConvertor } = useCoinContext();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [marketData, setMarketData] = useState({
     activeCurrencies: 0,
@@ -54,8 +53,10 @@ const Navbar = () => {
         volume: data.total_volume.btc,
         marketCap: data.total_market_cap.btc,
       });
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch coinbar data");
+    } catch (err: unknown) {
+      let message = "Failed to fetch coinbar data";
+      if (err instanceof Error) message = err.message;
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,6 @@ const Navbar = () => {
       </div>
     );
   }
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   return (
     <div className="w-full flex flex-col ">

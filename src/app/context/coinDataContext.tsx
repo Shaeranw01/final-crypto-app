@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, createContext, ReactElement } from "react";
+import {
+  useState,
+  useEffect,
+  createContext,
+  ReactElement,
+  useCallback,
+} from "react";
 
 import { Coin } from "@/interfaces/Coininterface";
 import { CoinContextType } from "@/interfaces/CoinContextType";
@@ -35,14 +41,8 @@ export const CoinContext = ({ children }: { children: React.ReactNode }) => {
     return debouncedValue;
   }
   const debouncedCurrency = useDebouncedValue(selectedCurrency, 600);
-  useEffect(() => {
-    // Reset data and page, then fetch fresh
-    setData([]);
-    setPage(1);
-    fetchInitialData();
-  }, [debouncedCurrency]);
 
-  const fetchInitialData = async () => {
+  const fetchInitialData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -63,12 +63,16 @@ export const CoinContext = ({ children }: { children: React.ReactNode }) => {
 
       setData(data);
       setPage(1);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch coin data");
+    } catch (err: unknown) {
+      let message = "Failed to fetch coin data";
+      if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedCurrency]);
 
   const fetchMoreData = async () => {
     try {
@@ -85,10 +89,20 @@ export const CoinContext = ({ children }: { children: React.ReactNode }) => {
 
       setData((prev) => prev.concat(data));
       setPage(nextPage);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch more coins");
+    } catch (err: unknown) {
+      let message = "Failed to fetch coin data";
+      if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
     }
   };
+  useEffect(() => {
+    // Reset data and page, then fetch fresh
+    setData([]);
+    setPage(1);
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   return (
     <CoinDataContext.Provider

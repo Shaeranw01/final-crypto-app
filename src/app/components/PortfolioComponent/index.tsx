@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AddAsset from "../AddAsset";
 
 const PortfolioComponent = () => {
@@ -11,7 +11,6 @@ const PortfolioComponent = () => {
   };
   const handleSave = () => {
     setPopUp(!showAddPopUp);
-    console.log("button ");
   };
   console.log(showAddPopUp);
   return (

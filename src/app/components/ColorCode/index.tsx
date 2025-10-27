@@ -1,5 +1,3 @@
-import formatCompactNumber from "@/utlis/getFormattedPrice";
-
 const ColorCode = ({
   dividend,
   divisor,
@@ -9,7 +7,6 @@ const ColorCode = ({
 }) => {
   const value = divisor ? (dividend - divisor) / divisor : 0;
   const safeValue = Number.isFinite(value) ? value : 0;
-  const valueType: boolean = safeValue >= 0;
   const formattedNumber = safeValue.toLocaleString(undefined, {
     maximumFractionDigits: 2,
   });

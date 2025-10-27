@@ -1,18 +1,22 @@
-import { useRef } from "react";
-function useDebouncedFunction(
-  callback: (...args: any[]) => void,
+import { useRef, useCallback } from "react";
+
+function useDebouncedFunction<T extends (...args: unknown[]) => void>(
+  callback: T,
   waitTime: number
-) {
-  //timer as ueref is not updated on every rerender
+): (...args: Parameters<T>) => void {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  return (...args: any[]) => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-    timer.current = setTimeout(() => {
-      callback(...args);
-    }, waitTime);
-  };
+  return useCallback(
+    (...args: Parameters<T>) => {
+      if (timer.current) {
+        clearTimeout(timer.current);
+      }
+      timer.current = setTimeout(() => {
+        callback(...args);
+      }, waitTime);
+    },
+    [callback, waitTime]
+  );
 }
+
 export default useDebouncedFunction;

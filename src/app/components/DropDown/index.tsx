@@ -1,19 +1,13 @@
 "use client";
 import { useOutsideClick } from "@/app/hooks/useClickOutside";
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  ReactElement,
-  useContext,
-} from "react";
-import { CoinDataContext } from "@/app/context/coinDataContext";
+import React, { useRef, useState, useEffect, ReactElement } from "react";
 
 import { LuEuro } from "react-icons/lu";
 import { MdCurrencyPound } from "react-icons/md";
 import { LuBitcoin } from "react-icons/lu";
 import { FaEthereum } from "react-icons/fa6";
 import { BiDollar } from "react-icons/bi";
+import { useCoinContext } from "@/app/hooks/useCoinContext";
 
 interface Currency {
   name: string;
@@ -55,12 +49,10 @@ const Dropdown = () => {
     setSelectedCurrency,
     currencySymbol,
     setCurrencySymbol,
-  } = useContext(CoinDataContext);
+  } = useCoinContext();
+
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  // const [currentCurrency, setCurrency] = useState("usd");
-  const [currentSymbol, setSymbol] =
-    useState<React.ReactElement>(currencySymbol);
 
   const ref = useRef(null);
 
@@ -83,10 +75,8 @@ const Dropdown = () => {
   }
 
   const handleSelect = (newCurrency: string, newSymbol: React.ReactElement) => {
-    // setSymbol(newSymbol);
     setSelectedCurrency(newCurrency);
     setCurrencySymbol(newSymbol);
-    console.log("selected currency in dropdown", newCurrency);
   };
 
   return (

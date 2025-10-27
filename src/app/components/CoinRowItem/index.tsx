@@ -9,7 +9,6 @@ import Image from "next/image";
 import formatCompactNumber from "@/utlis/getFormattedPrice";
 import Link from "next/link";
 import { trimName } from "@/utlis/trimName";
-import { useState } from "react";
 
 const CoinRowItem = ({ coin, index }: { coin: Coin; index: number }) => {
   const priceChange1h: number = coin.price_change_percentage_1h_in_currency;

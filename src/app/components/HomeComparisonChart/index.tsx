@@ -8,6 +8,7 @@ import { ChartArea } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import { ScriptableContext } from "chart.js";
 import { ChartOptions } from "chart.js";
+import { useCallback } from "react";
 
 import { useCoinContext } from "@/app/hooks/useCoinContext";
 const HomeComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
@@ -53,7 +54,7 @@ const HomeComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
     chartArea: ChartArea,
     color: string
   ) {
-    let gradient = ctx.createLinearGradient(
+    const gradient = ctx.createLinearGradient(
       0,
       chartArea.top,
       0,
@@ -65,74 +66,81 @@ const HomeComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
     gradient.addColorStop(1, color + "00");
     return gradient;
   }
-  async function getData(time: TimeRange, coinId1: string, coinId2: string) {
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      const { days, interval } = intervals[time];
-      const [res1, res2] = await Promise.all([
-        fetch(
-          `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
-        ),
-        fetch(
-          `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
-        ),
-      ]);
+  const getData = useCallback(
+    async (time: TimeRange, coinId1: string, coinId2: string) => {
+      setLoading(true);
+      setErrorMessage(null);
 
-      if (!res1.ok || !res2.ok) {
-        throw new Error("Too many requests. Please try again later!");
+      try {
+        const { days, interval } = intervals[time];
+
+        const [res1, res2] = await Promise.all([
+          fetch(
+            `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+          ),
+          fetch(
+            `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+          ),
+        ]);
+
+        if (!res1.ok || !res2.ok) {
+          throw new Error("Too many requests. Please try again later!");
+        }
+
+        const jsonData1 = await res1.json();
+        const jsonData2 = await res2.json();
+
+        if (
+          !jsonData1?.prices?.length ||
+          !jsonData2?.prices?.length ||
+          !jsonData1?.total_volumes?.length ||
+          !jsonData2?.total_volumes?.length
+        ) {
+          throw new Error("Incomplete or invalid chart data received.");
+        }
+
+        const timeArray = jsonData1.prices.map((price: [number, number]) =>
+          new Date(price[0] * 1000).getDate()
+        );
+        const priceData1 = jsonData1.prices.map(
+          (price: [number, number]) => price[1]
+        );
+        const volumeArray1 = jsonData1.total_volumes.map(
+          (volume: [number, number]) => volume[1]
+        );
+
+        const priceData2 = jsonData2.prices.map(
+          (price: [number, number]) => price[1]
+        );
+        const volumeArray2 = jsonData2.total_volumes.map(
+          (volume: [number, number]) => volume[1]
+        );
+
+        setComparisonData({
+          selectedCoin1Data: priceData1,
+          selectedCoin2Data: priceData2,
+          volumeData1: volumeArray1,
+          volumeData2: volumeArray2,
+          timeData: timeArray,
+        });
+      } catch (err: unknown) {
+        let message = "An unknown error occurred";
+        if (err instanceof Error) message = err.message;
+
+        setErrorMessage(message);
+        setComparisonData({
+          selectedCoin1Data: [],
+          selectedCoin2Data: [],
+          volumeData1: [],
+          volumeData2: [],
+          timeData: [],
+        });
+      } finally {
+        setLoading(false);
       }
-
-      const jsonData1 = await res1.json();
-      const jsonData2 = await res2.json();
-      if (
-        !jsonData1?.prices?.length ||
-        !jsonData2?.prices?.length ||
-        !jsonData1?.total_volumes?.length ||
-        !jsonData2?.total_volumes?.length
-      ) {
-        throw new Error("Incomplete or invalid chart data received.");
-      }
-
-      const timeArray = jsonData1?.prices?.map((price: [number, number]) =>
-        new Date(price[0] * 1000).getDate()
-      );
-
-      const priceData1 = jsonData1?.prices?.map(
-        (price: [number, number]) => price[1]
-      );
-
-      const volumeArray1 = jsonData1.total_volumes.map(
-        (volume: [number, number]) => volume[1]
-      );
-
-      const priceData2 = jsonData2?.prices?.map(
-        (price: [number, number]) => price[1]
-      );
-      const volumeArray2 = jsonData2.total_volumes.map(
-        (volume: [number, number]) => volume[1]
-      );
-
-      setComparisonData({
-        selectedCoin1Data: priceData1,
-        selectedCoin2Data: priceData2,
-        volumeData1: volumeArray1,
-        volumeData2: volumeArray2,
-        timeData: timeArray,
-      });
-    } catch (err: any) {
-      setErrorMessage(err.message);
-      setComparisonData({
-        selectedCoin1Data: [],
-        selectedCoin2Data: [],
-        volumeData1: [],
-        volumeData2: [],
-        timeData: [],
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    [debouncedCurrency]
+  );
 
   const label = comparisonData.timeData;
 
@@ -308,7 +316,7 @@ const HomeComparisonChart = ({ id1, id2 }: { id1: string; id2: string }) => {
   };
   useEffect(() => {
     getData(time, id1, id2);
-  }, [time]);
+  }, [getData, id1, id2, time]);
   return (
     <div className="w-full my-5 flex flex-col gap-5">
       <div className="flex flex-col sm:flex-row gap-5 my-5">

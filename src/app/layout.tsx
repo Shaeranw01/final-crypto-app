@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Fira_Code } from "next/font/google";
+
 import "./globals.css";
-import Provider from "./hooks/themeProvider";
+
 import Navbar from "./components/Navbar";
 import { CoinContext } from "./context/coinDataContext";
 import { ThemeProvider } from "next-themes";
-import { Inter } from "next/font/google";
-import { Roboto } from "next/font/google";
+
 import { Open_Sans } from "next/font/google";
 import MobileFooter from "./components/MobileFooter";
 

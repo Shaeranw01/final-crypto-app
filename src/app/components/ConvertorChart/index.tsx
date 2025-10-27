@@ -1,10 +1,9 @@
 "use client";
 
 import "chart.js/auto";
-import dynamic from "next/dynamic";
-import { useContext, useState, useEffect } from "react";
+
+import { useState, useEffect } from "react";
 import { Coin } from "@/interfaces/Coininterface";
-import { BsAspectRatio } from "react-icons/bs";
 import { Line } from "react-chartjs-2";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
 import { ScriptableContext } from "chart.js/auto";
@@ -24,7 +23,7 @@ const ConvertorChart = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { debouncedCurrency } = useCoinContext();
-  const [isClicked, setClicked] = useState("30d");
+  const [isClicked, setClicked] = useState<TimeRange>("30d");
   type TimeRange = "1d" | "7d" | "14d" | "30d" | "365d";
 
   const intervals: Record<TimeRange, { days: number; interval: string }> = {
@@ -51,6 +50,7 @@ const ConvertorChart = ({
   };
 
   async function getData(time: TimeRange, coinId1: string, coinId2: string) {
+    if (!coinId1 || !coinId2) return;
     const { days, interval } = intervals[time];
     setLoading(true);
     setError(null);
@@ -74,7 +74,7 @@ const ConvertorChart = ({
       if (!json1?.prices || !json2?.prices) {
         throw new Error("Incomplete data received from API.");
       }
-      console.log("converrtor time", json1.prices);
+
       const timeArray = json1.prices.map((p: number[]) =>
         new Date(p[0]).toLocaleDateString("en-US", {
           month: "short",
@@ -94,19 +94,18 @@ const ConvertorChart = ({
         displayData: ratioData,
         timeData: timeArray,
       });
-    } catch (err: any) {
-      setError(err.message || "Something went wrong fetching chart data.");
+    } catch (err) {
+      setError(
+        (err as Error).message || "Something went wrong fetching chart data."
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  //   getData("30d", fromCoin?.id, toCoin?.id);
   useEffect(() => {
-    if (fromCoin?.id && toCoin?.id) {
-      getData("30d", fromCoin.id, toCoin.id);
-    }
-  }, [fromCoin.id, toCoin.id, debouncedCurrency]);
+    getData(isClicked, fromCoin.id, toCoin.id);
+  }, [fromCoin.id, toCoin.id, debouncedCurrency, isClicked]);
 
   const label = priceData.timeData;
 
@@ -120,8 +119,6 @@ const ConvertorChart = ({
     },
     scales: {
       y: {
-        // beginAtZero: true,
-        // display: false,
         beginAtZero: true,
         ticks: { display: false, min: 0 },
         grid: {
@@ -191,7 +188,7 @@ const ConvertorChart = ({
     chartArea: ChartArea,
     color: string
   ) {
-    let gradient = ctx.createLinearGradient(
+    const gradient = ctx.createLinearGradient(
       0,
       chartArea.top,
       0,

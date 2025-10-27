@@ -1,13 +1,9 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import dynamic from "next/dynamic";
 import "chart.js/auto";
-import { setRequestMeta } from "next/dist/server/request-meta";
-import gradient from "chartjs-plugin-gradient";
 import { Bar, Line } from "react-chartjs-2";
 import { ChartArea } from "chart.js";
 import { ScriptableContext } from "chart.js";
-import { Chart } from "chart.js";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
 import { ChartOptions } from "chart.js";
 
@@ -51,7 +47,7 @@ const HomeChart = () => {
     chartArea: ChartArea,
     color: string
   ) {
-    let gradient = ctx.createLinearGradient(
+    const gradient = ctx.createLinearGradient(
       0,
       chartArea.top,
       0,
@@ -103,10 +99,11 @@ const HomeChart = () => {
           priceData: priceArray,
           volumeData: volumeArray,
         });
-      } catch (err: any) {
-        const message = err.message.includes("Failed to fetch")
-          ? "Network or server blocked request — maybe too many requests"
-          : err.message;
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Something went wrong fetching chart data";
 
         setChartError(message);
         setChartData({ datesData: [], priceData: [], volumeData: [] });

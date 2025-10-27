@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+
 import dynamic from "next/dynamic";
 import "chart.js/auto";
 import getLabelArray from "@/utlis/getLabelArray";
@@ -8,8 +8,6 @@ import { ScriptableContext } from "chart.js/auto";
 import { ChartOptions } from "chart.js/auto";
 
 const Chart = ({ priceArray }: { priceArray: number[] }) => {
-  const [priceData, setData] = useState(priceArray);
-
   const Line = dynamic(
     () => import("react-chartjs-2").then((mod) => mod.Line),
     {
@@ -35,7 +33,7 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
     color2: string,
     color3: string
   ) {
-    let gradient = ctx.createLinearGradient(
+    const gradient = ctx.createLinearGradient(
       0,
       chartArea.top,
       0,
@@ -53,7 +51,7 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
     labels: labelArray,
     datasets: [
       {
-        data: priceData,
+        data: priceArray,
 
         backgroundColor: function (context: ScriptableContext<"line">) {
           const chart = context.chart;
@@ -64,19 +62,19 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
           return getGradient(
             ctx,
             chartArea,
-            priceData[0] < priceData[priceData.length - 1]
+            priceArray[0] < priceArray[priceArray.length - 1]
               ? bgColor[0]
               : bgColor[1],
-            priceData[0] < priceData[priceData.length - 1]
+            priceArray[0] < priceArray[priceArray.length - 1]
               ? bgColor[2]
               : bgColor[3],
-            priceData[0] < priceData[priceData.length - 1]
+            priceArray[0] < priceArray[priceArray.length - 1]
               ? bgColor[4]
               : bgColor[5]
           );
         },
         borderColor:
-          priceData[0] < priceData[priceData.length - 1]
+          priceArray[0] < priceArray[priceArray.length - 1]
             ? "rgba(3,253,252, 1)"
             : "rgba(252,129,129, 1)",
 
@@ -93,7 +91,7 @@ const Chart = ({ priceArray }: { priceArray: number[] }) => {
     plugins: {
       legend: {
         display: false,
-      }, // Hide legend
+      },
     },
     scales: {
       y: {
