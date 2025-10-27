@@ -3,7 +3,6 @@
 import AssetPopUp from "../AssetPopUp";
 import useLocalState from "@/app/hooks/useLocalState";
 import { CiEdit } from "react-icons/ci";
-import { useCoinContext } from "@/app/hooks/useCoinContext";
 import { Coin } from "@/interfaces/Coininterface";
 
 import React, { useState } from "react";
@@ -11,7 +10,6 @@ import React, { useState } from "react";
 import AssetStats from "../AssetStats";
 
 const AddAsset = () => {
-  // const [showAsset, setAsset] = useState(true);
   const [editAsset, setEdit] = useState(false);
 
   const [assetCoins, setAssetCoins] = useLocalState<Coin[]>("assetCoins", []);
@@ -20,9 +18,6 @@ const AddAsset = () => {
   const handlePopUp = () => {
     setPopUp(true);
   };
-  // const handleSave = () => {
-  //   setPopUp(false);
-  // };
 
   const handleEdit = () => {
     setEdit(!editAsset);
