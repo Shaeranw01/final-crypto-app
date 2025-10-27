@@ -14,7 +14,11 @@ import { BiDollar } from "react-icons/bi";
 
 export const CoinDataContext = createContext<CoinContextType | null>(null);
 
-export const CoinContext = ({ children }: { children: React.ReactNode }) => {
+export const CoinDataProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [coinData, setData] = useState<Coin[]>([]);
   const [page, setPage] = useState<number>(1);
   const [showConvertor, setShowConvertor] = useState<boolean>(false);

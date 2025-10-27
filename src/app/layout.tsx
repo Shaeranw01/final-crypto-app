@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import Navbar from "./components/Navbar";
-import { CoinContext } from "./context/coinDataContext";
+import { CoinDataProvider } from "./context/coinDataContext";
 import { ThemeProvider } from "next-themes";
 
 import { Open_Sans } from "next/font/google";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 const openSans = Open_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"], // pick the weights you need
+  weight: ["400", "500", "600", "700"],
 });
 export default function RootLayout({
   children,
@@ -29,14 +29,14 @@ export default function RootLayout({
         className={`${openSans.className} dark:bg-[#13121A] bg-[#f5f5f5] min-h-screen`}
         suppressHydrationWarning
       >
-        <CoinContext>
+        <CoinDataProvider>
           <ThemeProvider attribute="class">
             <Navbar />
 
             {children}
             <MobileFooter />
           </ThemeProvider>
-        </CoinContext>
+        </CoinDataProvider>
       </body>
     </html>
   );
