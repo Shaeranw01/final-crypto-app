@@ -1,17 +1,16 @@
 import { useRef, useCallback } from "react";
 
-function useDebouncedFunction<T extends (...args: any[]) => any>(
-  callback: T,
+function useDebouncedFunction<Args extends unknown[]>(
+  callback: (...args: Args) => void | Promise<void>,
   waitTime: number
 ) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return useCallback(
-    (...args: Parameters<T>) => {
+    (...args: Args) => {
       if (timer.current) clearTimeout(timer.current);
-
       timer.current = setTimeout(() => {
-        void callback(...args); // allow async without changing return type
+        void callback(...args);
       }, waitTime);
     },
     [callback, waitTime]

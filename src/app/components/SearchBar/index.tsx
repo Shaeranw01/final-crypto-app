@@ -14,15 +14,15 @@ const SearchBar = ({ isMobile }: { isMobile: boolean }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
-  const fetchData = useCallback(async (q: string) => {
+  const fetchData = useCallback(async (q: string): Promise<void> => {
     const response = await fetch(
-      `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/search?key=CG-YHe92rLkyEoghZERKMWNmW5K&query=${q.toLowerCase()}`
+      `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/search?query=${q.toLowerCase()}`
     );
     const allData = await response.json();
-    setData(allData.coins || []);
+    setData(allData.coins ?? []);
   }, []);
-
-  const debouncedFetchData = useDebouncedFunction(fetchData, 100);
+  // ✅ Tell TypeScript what type the callback expects
+  const debouncedFetchData = useDebouncedFunction<[string]>(fetchData, 200);
 
   const closeList = () => {
     setIsOpen(false);
