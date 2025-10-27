@@ -2,7 +2,7 @@
 
 import "chart.js/auto";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Coin } from "@/interfaces/Coininterface";
 import { Line } from "react-chartjs-2";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
@@ -49,63 +49,68 @@ const ConvertorChart = ({
     },
   };
 
-  async function getData(time: TimeRange, coinId1: string, coinId2: string) {
-    if (!coinId1 || !coinId2) return;
-    const { days, interval } = intervals[time];
-    setLoading(true);
-    setError(null);
+  const getData = useCallback(
+    async (time: TimeRange, coinId1: string, coinId2: string) => {
+      if (!coinId1 || !coinId2) return;
+      const { days, interval } = intervals[time];
+      setLoading(true);
+      setError(null);
 
-    try {
-      const [res1, res2] = await Promise.all([
-        fetch(
-          `https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
-        ),
-        fetch(
-          `https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
-        ),
-      ]);
+      try {
+        const [res1, res2] = await Promise.all([
+          fetch(
+            `https://api.coingecko.com/api/v3/coins/${coinId1}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+          ),
+          fetch(
+            `https://api.coingecko.com/api/v3/coins/${coinId2}/market_chart?vs_currency=${debouncedCurrency}&days=${days}&interval=${interval}`
+          ),
+        ]);
 
-      if (!res1.ok || !res2.ok) {
-        throw new Error("Failed to fetch chart data. Please try again later.");
+        if (!res1.ok || !res2.ok) {
+          throw new Error(
+            "Failed to fetch chart data. Please try again later."
+          );
+        }
+
+        const [json1, json2] = await Promise.all([res1.json(), res2.json()]);
+
+        if (!json1?.prices || !json2?.prices) {
+          throw new Error("Incomplete data received from API.");
+        }
+
+        const timeArray = json1.prices.map((p: number[]) =>
+          new Date(p[0]).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })
+        );
+
+        const priceData1 = json1.prices.map((p: number[]) => p[1]);
+        const priceData2 = json2.prices.map((p: number[]) => p[1]);
+
+        const ratioData = priceData1.map((val: number, idx: number) => {
+          const denom = priceData2[idx] || 1;
+          return val / denom;
+        });
+
+        setPriceData({
+          displayData: ratioData,
+          timeData: timeArray,
+        });
+      } catch (err) {
+        setError(
+          (err as Error).message || "Something went wrong fetching chart data."
+        );
+      } finally {
+        setLoading(false);
       }
-
-      const [json1, json2] = await Promise.all([res1.json(), res2.json()]);
-
-      if (!json1?.prices || !json2?.prices) {
-        throw new Error("Incomplete data received from API.");
-      }
-
-      const timeArray = json1.prices.map((p: number[]) =>
-        new Date(p[0]).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        })
-      );
-
-      const priceData1 = json1.prices.map((p: number[]) => p[1]);
-      const priceData2 = json2.prices.map((p: number[]) => p[1]);
-
-      const ratioData = priceData1.map((val: number, idx: number) => {
-        const denom = priceData2[idx] || 1;
-        return val / denom;
-      });
-
-      setPriceData({
-        displayData: ratioData,
-        timeData: timeArray,
-      });
-    } catch (err) {
-      setError(
-        (err as Error).message || "Something went wrong fetching chart data."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    [debouncedCurrency, setPriceData, setLoading, setError]
+  );
 
   useEffect(() => {
     getData(isClicked, fromCoin.id, toCoin.id);
-  }, [fromCoin.id, toCoin.id, debouncedCurrency, isClicked]);
+  }, [fromCoin.id, toCoin.id, getData, isClicked]);
 
   const label = priceData.timeData;
 
@@ -131,12 +136,7 @@ const ConvertorChart = ({
         ticks: {
           display: true,
           padding: 0,
-          callback: function (
-            this: import("chart.js").Scale, // ✅ explicitly declare `this`
-            tickValue: string | number,
-            index: number,
-            ticks: any[]
-          ) {
+          callback(this: import("chart.js").Scale, tickValue: number | string) {
             const label = this.getLabelForValue(tickValue as number) as string;
 
             if (label.includes(" ")) return label.split(" ")[1];
