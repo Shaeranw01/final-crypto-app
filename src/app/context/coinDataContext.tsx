@@ -12,7 +12,7 @@ import { Coin } from "@/interfaces/Coininterface";
 import { CoinContextType } from "@/interfaces/CoinContextType";
 import { BiDollar } from "react-icons/bi";
 
-export const CoinDataContext = createContext<CoinContextType | null>(null);
+export const CoinDataContext = createContext<CoinContextType>(null!);
 
 export const CoinDataProvider = ({
   children,
