@@ -1,7 +1,7 @@
 "use client";
 
 import { useOutsideClick } from "@/app/hooks/useClickOutside";
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Coin } from "@/interfaces/Coininterface";
 import useDebouncedFunction from "@/app/hooks/useDebounce";

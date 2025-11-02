@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Coin } from "@/interfaces/Coininterface";
 import CoinRowItem from "../CoinRowItem";
