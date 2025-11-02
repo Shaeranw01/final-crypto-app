@@ -1,7 +1,7 @@
 "use client";
 
 import { useOutsideClick } from "@/app/hooks/useClickOutside";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Coin } from "@/interfaces/Coininterface";
 import useDebouncedFunction from "@/app/hooks/useDebounce";
@@ -16,13 +16,13 @@ const SearchBar = ({ isMobile }: { isMobile: boolean }) => {
   };
   const fetchData = useCallback(async (q: string): Promise<void> => {
     const response = await fetch(
-      `https://corsproxy.io/?url=https://api.coingecko.com/api/v3/search?query=${q.toLowerCase()}`
+      `https://api.coingecko.com/api/v3/search?query=${q.toLowerCase()}`
     );
     const allData = await response.json();
     setData(allData.coins ?? []);
   }, []);
   // ✅ Tell TypeScript what type the callback expects
-  const debouncedFetchData = useDebouncedFunction<[string]>(fetchData, 200);
+  const debouncedFetchData = useDebouncedFunction<[string]>(fetchData, 600);
 
   const closeList = () => {
     setIsOpen(false);
