@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Coin } from "@/interfaces/Coininterface";
 import CoinRowItem from "../CoinRowItem";
@@ -7,11 +7,7 @@ import CoinRowItem from "../CoinRowItem";
 import { useCoinContext } from "@/app/hooks/useCoinContext";
 
 const InfiniteScrollComponent = () => {
-  const { coinData, fetchMoreData, debouncedCurrency } = useCoinContext();
-
-  useEffect(() => {
-    fetchMoreData();
-  }, [debouncedCurrency, fetchMoreData]);
+  const { coinData, fetchMoreData, hasMore } = useCoinContext();
 
   return (
     <div className="w-full">
@@ -29,7 +25,7 @@ const InfiniteScrollComponent = () => {
       <InfiniteScroll
         dataLength={coinData.length} //This is important field to render the next data
         next={fetchMoreData}
-        hasMore={true}
+        hasMore={hasMore}
         loader={
           <div className="flex justify-center items-center my-10">
             <div className="w-10 h-10 border-2 border-[#424286] border-t-transparent rounded-full animate-spin"></div>

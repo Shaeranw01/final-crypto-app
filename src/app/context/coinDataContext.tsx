@@ -30,7 +30,7 @@ export const CoinDataProvider = ({
   const [showComparison, setShowComparison] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [hasMore, setHasMore] = useState<boolean>(true);
   function useDebouncedValue<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -50,6 +50,7 @@ export const CoinDataProvider = ({
     try {
       setLoading(true);
       setError(null);
+      setHasMore(true); //// ✅ reset when currency changes
 
       const response = await fetch(
         `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${debouncedCurrency}&order=market_cap_desc&per_page=50&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d`
@@ -67,6 +68,7 @@ export const CoinDataProvider = ({
 
       setData(data);
       setPage(1);
+      if (data.length < 50) setHasMore(false);
     } catch (err: unknown) {
       let message = "Failed to fetch coin data";
       if (err instanceof Error) {
@@ -79,6 +81,7 @@ export const CoinDataProvider = ({
   }, [debouncedCurrency]);
 
   const fetchMoreData = async () => {
+    if (!hasMore) return; // ✅ Prevent unnecessary calls
     try {
       const nextPage = page + 1;
       const response = await fetch(
@@ -93,6 +96,8 @@ export const CoinDataProvider = ({
 
       setData((prev) => prev.concat(data));
       setPage(nextPage);
+      // // ✅ STOP future requests if API returns less than 50
+      if (data.length < 50) setHasMore(false);
     } catch (err: unknown) {
       let message = "Failed to fetch coin data";
       if (err instanceof Error) {
@@ -113,6 +118,7 @@ export const CoinDataProvider = ({
       value={{
         coinData,
         fetchMoreData,
+        hasMore,
         showConvertor,
         setShowConvertor,
         showComparison,

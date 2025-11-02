@@ -4,6 +4,7 @@ import { Coin } from "./Coininterface";
 export interface CoinContextType {
   coinData: Coin[];
   fetchMoreData: () => void;
+  hasMore: boolean;
   showConvertor: boolean;
   setShowConvertor: (val: boolean) => void;
   showComparison: boolean;
